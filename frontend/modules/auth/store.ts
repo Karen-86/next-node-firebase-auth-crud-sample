@@ -37,14 +37,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       const [userData, mediaData] = await Promise.all([
         authApi.getProfile(),
-        bannersApi.getBanners({ userId: authUser?.uid }),
+        bannersApi.getBanner({ id: authUser?.uid }),
       ])
 
       if (!userData.success) return errorCB(userData.message)
       console.log(userData.data, " =getProfileAsync=")
-      set({ user: userData.data })
+      set({ user: {...userData.data, banner: mediaData.data} })
 
-      useBannerStore.getState().setBanner(mediaData.data[0])
+      // mediaData.data && useBannerStore.getState().setBanner(mediaData.data)
 
       successCB(userData.message)
     } finally {

@@ -1,5 +1,5 @@
 import express from "express";
-import { getBanners, createBanner, updateBanner } from "#root/modules/v1/banners/banners.controller.js";
+import { getBanners, getBanner, createBanner, updateBanner } from "#root/modules/v1/banners/banners.controller.js";
 import isAuthenticated from "#root/middlewares/authentication/isAuthenticated.middleware.js";
 import loadUser from "#root/middlewares/authentication/loadUser.middleware.js";
 import { limiter } from "#root/lib/utils/rateLimiters.js";
@@ -13,6 +13,8 @@ const router = express.Router();
 
 router.get("/", isAuthenticated, getBanners);
 
+router.get("/:id", loadResource({ collectionName: "banners", reqKey: "banner", ignoreNotFound: true }), getBanner);
+
 router.post("/", isAuthenticated, validate(createBannerSchema), loadUser(), createBanner);
 
 router.patch(
@@ -21,7 +23,7 @@ router.patch(
   validate(updateBannerSchema),
   loadUser(),
   loadResource({ collectionName: "banners", reqKey: "banner" }),
-  isResourceOwner("banner"),
+  isResourceOwner({reqKey:"banner"}),
   updateBanner,
 );
 

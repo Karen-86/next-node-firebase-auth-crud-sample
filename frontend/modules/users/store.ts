@@ -52,13 +52,13 @@ export const useUserStore = create<UserStore>((set, get) => ({
     try {
       const [userData, mediaData] = await Promise.all([
         usersApi.getUser({ id: userId }),
-        bannersApi.getBanners({ userId }),
+        bannersApi.getBanner({ id: userId }),
       ])
 
       if (!userData.success) return errorCB(userData.message)
       console.log(userData, " =getTargetUserAsync=")
 
-      set({ targetUser: { ...userData.data, banner: mediaData.data[0] } })
+      set({ targetUser: {...userData.data, banner: mediaData.data} })
       successCB(userData.message)
     } finally {
       set({ isTargetUserLoading: false })

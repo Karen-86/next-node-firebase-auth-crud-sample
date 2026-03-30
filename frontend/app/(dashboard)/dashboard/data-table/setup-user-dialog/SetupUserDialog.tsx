@@ -8,7 +8,7 @@ import {
   SelectDemo,
   // SelectScrollable
 } from "@/components/index"
-import useAlert from "@/hooks/useAlert"
+import { successAlert, errorAlert, warningAlert } from "@/lib/utils/alert"
 
 import { DropdownMenuCheckboxes } from "@/components/index.js"
 import { ChevronDown } from "lucide-react"
@@ -28,10 +28,16 @@ type StateProps = {
   roles: any
 }
 
-const SetupUserDialogContent = ({ user = {}, closeDialog = () => {} }: { user: any; closeDialog: () => void }) => {
+const SetupUserDialogContent = ({
+  user = {},
+  closeDialog = () => {},
+}: {
+  user: any
+  closeDialog: () => void
+}) => {
   const updateTargetUserRolesAsync = useUserStore((s) => s.updateTargetUserRolesAsync)
   const getProfileAsync = useAuthStore((s) => s.getProfileAsync)
-  const isTargetUserRolesUpdating = useUserStore(s=>s.isTargetUserRolesUpdating)
+  const isTargetUserRolesUpdating = useUserStore((s) => s.isTargetUserRolesUpdating)
 
   const [state, setState] = useState<StateProps>({
     roles: user.roles,
@@ -39,7 +45,6 @@ const SetupUserDialogContent = ({ user = {}, closeDialog = () => {} }: { user: a
 
   const [defaultRoles, setDefaultRoles] = useState<any>([])
 
-  const {successAlert, warningAlert } = useAlert()
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setState((prev) => ({
@@ -63,9 +68,8 @@ const SetupUserDialogContent = ({ user = {}, closeDialog = () => {} }: { user: a
         successAlert(message)
         // getProfileAsync()
       },
-      warningCB: (message: string) => {
-        warningAlert(message)
-      }
+      errorCB: (message: string) => errorAlert(message),
+      warningCB: (message: string) => warningAlert(message),
     })
   }
 
@@ -104,7 +108,12 @@ const SetupUserDialogContent = ({ user = {}, closeDialog = () => {} }: { user: a
           triggerClassName={`w-full mb-10`}
           contentClassName={`w-full! mx-0 max-w-full!`}
           trigger={
-            <ButtonDemo text="Assign Roles" className="justify-between" variant="outline" endIcon={<ChevronDown />} />
+            <ButtonDemo
+              text="Assign Roles"
+              className="justify-between"
+              variant="outline"
+              endIcon={<ChevronDown />}
+            />
           }
           // side="right"
           // align="end"
@@ -153,8 +162,19 @@ const SetupUserDialogContent = ({ user = {}, closeDialog = () => {} }: { user: a
         )} */}
 
         <div className="button-group flex justify-end gap-2">
-          <ButtonDemo className="" disabled={isTargetUserRolesUpdating} text="Cancel" variant="outline" type="button" onClick={closeDialog} />
-          <ButtonDemo className="" disabled={isTargetUserRolesUpdating} text={`${isTargetUserRolesUpdating ? "Loading..." : "Save"}`} />
+          <ButtonDemo
+            className=""
+            disabled={isTargetUserRolesUpdating}
+            text="Cancel"
+            variant="outline"
+            type="button"
+            onClick={closeDialog}
+          />
+          <ButtonDemo
+            className=""
+            disabled={isTargetUserRolesUpdating}
+            text={`${isTargetUserRolesUpdating ? "Loading..." : "Save"}`}
+          />
         </div>
       </form>
     </div>

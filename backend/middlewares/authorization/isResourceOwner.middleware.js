@@ -1,7 +1,7 @@
 import createError from "#root/lib/utils/createError.js";
 
 const isResourceOwner =
-  (reqKey = "resource") =>
+  ({reqKey = "resource"}) =>
   (req, _, next) => {
     const isResourceOwner = req.user.uid.toString() === req[reqKey].userId.toString();
 

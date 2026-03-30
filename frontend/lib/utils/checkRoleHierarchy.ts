@@ -16,26 +16,25 @@ const checkRoleHierarchy = ({
   roleHierarchy = hierarchy,
   ignoreTargetUserNotFound = false,
 }: any = {}) => {
-  return true
-  // const actingUser = user
-  // const targetUser = foundUser
+  const actingUser = user
+  const targetUser = foundUser
 
-  // if (!targetUser && ignoreTargetUserNotFound) {
-  //   if (getHighestRoleLevel(actingUser.roles, roleHierarchy) > 1) return true
-  //   return false
-  // }
+  if (!targetUser && ignoreTargetUserNotFound) {
+    if (getHighestRoleLevel(actingUser.roles, roleHierarchy) > 1) return true
+    return false
+  }
 
-  // if (!actingUser || !targetUser) return false
+  if (!actingUser || !targetUser) return false
 
-  // const actingLevel = getHighestRoleLevel(actingUser.roles, roleHierarchy)
-  // const targetLevel = getHighestRoleLevel(targetUser.roles, roleHierarchy)
+  const actingLevel = getHighestRoleLevel(actingUser.roles, roleHierarchy)
+  const targetLevel = getHighestRoleLevel(targetUser.roles, roleHierarchy)
 
-  // if (allowOwner && actingUser.uid.toString() === targetUser.uid.toString())
-  //   return true
+  if (allowOwner && actingUser.uid.toString() === targetUser.uid.toString())
+    return true
 
-  // if (actingLevel > targetLevel) return true
+  if (actingLevel > targetLevel) return true
 
-  // return false
+  return false
 }
 
 export default checkRoleHierarchy

@@ -5,10 +5,11 @@ import "dotenv/config";
 import error from "#root/middlewares/system/error.middleware.js";
 import notFound from "#root/middlewares/system/notFound.middleware.js";
 import cors from "cors";
-// import * as rateLimters from "#root/lib/utils/rateLimiters.js";
+import * as rateLimters from "#root/lib/utils/rateLimiters.js";
 import authRouter from "#root/modules/v1/auth/auth.routes.js";
 import usersRouter from "#root/modules/v1/users/users.routes.js";
 import bannersRouter from "#root/modules/v1/banners/banners.routes.js";
+import blogsRouter from "#root/modules/v1/blogs/blogs.routes.js";
 
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -32,10 +33,10 @@ app.use(express.json({ limit: "10mb" }));
 // app.use(cookieParser());
 app.use("/public-route", express.static(join(__dirname, "public")));
 
-// app.use("/api/v1/posts", rateLimters.limiter, postsRouter);
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", usersRouter);
-app.use("/api/v1/banners", bannersRouter);
+app.use("/api/v1/users", rateLimters.limiter, usersRouter);
+app.use("/api/v1/banners", rateLimters.limiter, bannersRouter);
+app.use("/api/v1/blogs", rateLimters.limiter, blogsRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

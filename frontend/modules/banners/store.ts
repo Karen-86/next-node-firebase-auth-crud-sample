@@ -5,20 +5,20 @@ import * as bannersApi from "@/modules/banners/api"
 const noop = () => {}
 
 type BannerStore = {
-  banner: BannerResponse
-  //   banners: BannerResponse[]
-  //   isBannersLoading: boolean
+  // banner: BannerResponse
+  // banners: BannerResponse[]
+  // isBannersLoading: boolean
   isBannerUpdating: boolean
   isBannerCreating: boolean
-  //   getBannersAsync: (params?: any) => Promise<void>
-  upsertBannerAsync: (params?: any) => Promise<void>
+  // getBannersAsync: (params?: any) => Promise<void>
+  // upsertBannerAsync: (params?: any) => Promise<void>
   createBannerAsync: (params?: any) => Promise<void>
   updateBannerAsync: (params?: any) => Promise<void>
-  setBanner: (params?: any) => void
+  // setBanner: (params?: any) => void
 }
 
 export const useBannerStore = create<BannerStore>((set, get) => ({
-  banner: {},
+  // banner: {},
   //   banners: [],
   //   isBannersLoading: false,
   isBannerUpdating: false,
@@ -40,7 +40,7 @@ export const useBannerStore = create<BannerStore>((set, get) => ({
   //     }
   //   },
 
-  setBanner: (v) => set({ banner: v }),
+  // setBanner: (v) => set({ banner: v }),
 
   createBannerAsync: async ({
     fields = {},
@@ -81,22 +81,22 @@ export const useBannerStore = create<BannerStore>((set, get) => ({
     }
   },
 
-  upsertBannerAsync: async ({
-    fields = {},
-    successCB = noop,
-    errorCB = noop,
-  }) => {
-    set({ isBannerUpdating: true })
+  // upsertBannerAsync: async ({
+  //   fields = {},
+  //   successCB = noop,
+  //   errorCB = noop,
+  // }) => {
+  //   set({ isBannerUpdating: true })
 
-    try {
-      const data = await bannersApi.updateBanner({ body: fields })
+  //   try {
+  //     const data = await bannersApi.updateBanner({ body: fields })
 
-      if (!data.success) return errorCB(data.message)
-      console.log(data, " =upsertBannerAsync=")
+  //     if (!data.success) return errorCB(data.message)
+  //     console.log(data, " =upsertBannerAsync=")
 
-      successCB(data.message || "Banner has been updated successfully.")
-    } finally {
-      set({ isBannerUpdating: false })
-    }
-  },
+  //     successCB(data.message || "Banner has been updated successfully.")
+  //   } finally {
+  //     set({ isBannerUpdating: false })
+  //   }
+  // },
 }))

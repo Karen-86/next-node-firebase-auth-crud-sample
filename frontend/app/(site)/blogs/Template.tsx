@@ -4,6 +4,7 @@ import React, { useEffect } from "react"
 import { BlogCard } from "@/components/index.js"
 import { Blog } from "@/modules/blogs/types"
 import { useBlogStore } from "@/modules/blogs/store"
+import { useAuthStore } from "@/modules/auth/store"
 
 export default function Template() {
   return (
@@ -17,6 +18,12 @@ const HeroSection = () => {
   const getBlogsAsync = useBlogStore((s) => s.getBlogsAsync)
   const blogs = useBlogStore((s) => s.blogs)
   const isBlogsLoading = useBlogStore((s) => s.isBlogsLoading)
+  // const authUser = useAuthStore((s) => s.authUser)
+
+  // useEffect(() => {
+  //   if(!authUser) return
+  //   getBlogsAsync()
+  // }, [authUser])
 
   useEffect(() => {
     getBlogsAsync()

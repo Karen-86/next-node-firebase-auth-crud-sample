@@ -1,11 +1,11 @@
 import express from "express";
-import { getUsers, getUser, deleteUser } from "#root/modules/v1/users/users.controller.js";
+import { getUsers, getUser, deleteUser, updateUserRoles } from "#root/modules/v1/users/users.controller.js";
 import isAuthenticated from "#root/middlewares/authentication/isAuthenticated.middleware.js";
 import loadUser from "#root/middlewares/authentication/loadUser.middleware.js";
 import loadResource from "#root/middlewares/database/loadResource.middleware.js";
 import checkRoleHierarchy from "#root/middlewares/authorization/checkRoleHierarchy.middleware.js";
 import { limiter } from "#root/lib/utils/rateLimiters.js";
-import { updateUserSchema } from '#root/modules/v1/users/users.validator.js'
+import { updateUserSchema, updateUserRolesSchema } from '#root/modules/v1/users/users.validator.js'
 import isOwner from "#root/middlewares/authorization/isOwner.middleware.js";
 import { updateUser } from "#root/modules/v1/users/users.controller.js";
 import validate from '#root/middlewares/validate.middleware.js'
@@ -34,6 +34,16 @@ router.delete(
   checkRoleHierarchy({ allowOwner: true }),
   deleteUser,
 );
+
+router.patch(
+  "/:id/roles",
+  validate(updateUserRolesSchema),
+  loadUser(),
+  loadResource({ collectionName: 'users', reqKey: "foundUser" }),
+  checkRoleHierarchy(),
+  updateUserRoles,
+);
+
 
 
 export default router;

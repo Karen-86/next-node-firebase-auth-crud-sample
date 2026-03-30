@@ -52,7 +52,26 @@ const getProfile = async (req, res, next) => {
   }
 };
 
-export {
-  createUser,
-  getProfile
-}
+// @PATCH: /auth/email | middlewares: isAuthenticated, loadUser
+const updateEmail = async (req, res, next) => {
+  const updatedUser = { email: req.decoded.email, updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+
+  await req.userRef.update(updatedUser);
+
+  const userSnap = await req.userRef.get();
+  if (!userSnap.exists) throw createError("User not found", 404);
+
+  const user = userSnap.data();
+
+  try {
+    res.status(200).json({
+      success: true,
+      message: "user email updated successfully",
+      data: user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { createUser, getProfile, updateEmail };

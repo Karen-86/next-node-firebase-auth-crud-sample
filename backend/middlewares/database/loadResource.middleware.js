@@ -5,7 +5,6 @@ const loadResource =
   ({
     paramKey = "id",
     reqKey = "resource",
-    documentName = "resource",
     collectionName = "",
     ignoreNotFound = false,
     getId = () => {},
@@ -20,7 +19,7 @@ const loadResource =
 
     if (!resourceSnap.exists) {
       if (ignoreNotFound) return next();
-      return next(createError(`${documentName} not found`, 404));
+      return next(createError(`${reqKey} not found`, 404));
     }
 
     const resourceData = { id: resourceSnap.id, ...resourceSnap.data() };

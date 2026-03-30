@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from "react"
 import { LOCAL_DATA } from "@/constants/index"
-import {
-  ButtonDemo,
-  DialogDemo,
-  InputDemo,
-  TextareaDemo,
-  CropDemo,
-} from "@/components/index"
+import { ButtonDemo, DialogDemo, InputDemo, TextareaDemo, CropDemo } from "@/components/index"
 import { Camera, X } from "lucide-react"
 import { DeleteUserDialog } from "../delete-user-dialog/DeleteUserDialog"
-import useUtil from "@/hooks/useUtil"
-import useAlert from "@/hooks/useAlert"
+import  { convertToBase64, resizeBase64Image} from '@/lib/utils/imageUtils'
+import { successAlert, errorAlert, warningAlert } from "@/lib/utils/alert"
 import { useAuthStore } from "@/modules/auth/store"
 import { useUserStore } from "@/modules/users/store"
 import { useBannerStore } from "@/modules/banners/store"
 
 const { bannerPlaceholderImage, avatarPlaceholderImage } = LOCAL_DATA.images
 
-const ProfileHeader = () => {
+const ProfileHeader = ({ details = {} }: { details: any }) => {
   const user = useAuthStore((s) => s.user)
-  const banner = useBannerStore((s) => s.banner)
 
   return (
     <div className="profile-header">
@@ -27,16 +20,14 @@ const ProfileHeader = () => {
         {true && (
           <img
             className="banner absolute top-0 left-0 h-full w-full rounded-lg border object-cover"
-            src={banner?.base64URL || bannerPlaceholderImage}
+            src={details?.banner?.base64URL || bannerPlaceholderImage}
             alt=""
           />
         )}
         <div className="avatar absolute bottom-0 left-[5%] w-[25%] translate-y-[50%] lg:w-[170px]">
           <div className="relative h-0 w-[100%] overflow-hidden rounded-full border-2 border-white pt-[100%] shadow-[0_0_6px_rgba(0,0,0,0.3)]">
             <img
-              src={
-                user.base64PhotoURL || user.photoURL || avatarPlaceholderImage
-              }
+              src={user.base64PhotoURL || user.photoURL || avatarPlaceholderImage}
               className="absolute top-0 left-0 block h-full w-full bg-gray-50 object-cover"
               alt=""
             />
@@ -45,16 +36,14 @@ const ProfileHeader = () => {
       </div>
       <div className="mt-3 mb-[15px] flex justify-end sm:mb-[5%] md:mb-[3%]">
         <div className="">
-          <EditProfileDialog />
+          <EditProfileDialog details={details} />
           <DeleteUserDialog userId={user.id} />
         </div>
       </div>
 
       <div className="mb-10 md:pl-10">
         <h2 className="text-2xl font-bold">{user.displayName}</h2>
-        <div className="max-w-[380px] text-sm font-medium text-gray-500">
-          {user.bio}
-        </div>
+        <div className="max-w-[380px] text-sm font-medium text-gray-500">{user.bio}</div>
       </div>
     </div>
   )
@@ -62,7 +51,7 @@ const ProfileHeader = () => {
 
 export default ProfileHeader
 
-const EditProfileDialog = () => {
+const EditProfileDialog = ({ details = {} }) => {
   return (
     <DialogDemo
       trigger={
@@ -73,7 +62,7 @@ const EditProfileDialog = () => {
         />
       }
     >
-      {(closeDialog) => <EditProfileContent closeDialog={closeDialog} />}
+      {(closeDialog) => <EditProfileContent details={details} closeDialog={closeDialog} />}
     </DialogDemo>
   )
 }
@@ -91,20 +80,22 @@ type StateProps = {
   bio: string
 }
 
-const EditProfileContent = ({ closeDialog = () => {} }) => {
+const EditProfileContent = ({
+  details = {},
+  closeDialog = () => {},
+}: {
+  details: any
+  closeDialog: any
+}) => {
   const getProfileAsync = useAuthStore((s) => s.getProfileAsync)
   const updateTargetUserAsync = useUserStore((s) => s.updateTargetUserAsync)
 
   const user = useAuthStore((s) => s.user)
   const authUser = useAuthStore((s) => s.authUser)
-  const banner = useBannerStore((s) => s.banner)
 
-  const upsertBannerAsync = useBannerStore((s) => s.upsertBannerAsync)
   const createBannerAsync = useBannerStore((s) => s.createBannerAsync)
   const updateBannerAsync = useBannerStore((s) => s.updateBannerAsync)
 
-  const { convertToBase64, resizeBase64Image } = useUtil()
-  const { successAlert, errorAlert } = useAlert()
 
   const [state, setState] = useState<StateProps>({
     // isAvatarExist: user.base64PhotoURL || user.photoURL,
@@ -113,7 +104,7 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
 
     // isBannerExist: false,
     isBannerRemoved: false,
-    newBanner: banner?.base64URL || bannerPlaceholderImage,
+    newBanner: details?.banner?.base64URL || bannerPlaceholderImage,
 
     name: "",
     bio: "",
@@ -146,9 +137,7 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
     }
   }
 
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setState((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -188,7 +177,7 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
     }
 
     let errorMessage = ""
-
+    
     // REQUESTS
     await Promise.all([
       updateTargetUserAsync({
@@ -196,13 +185,13 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
         fields,
         errorCB: (m: string) => (errorMessage = m),
       }),
-      !banner.id
+      !details?.banner?.id
         ? createBannerAsync({
             fields: { ...updatedBannerFields },
             errorCB: (m: string) => (errorMessage = m),
           })
-          : updateBannerAsync({
-            bannerId: banner.id,
+        : updateBannerAsync({
+            bannerId: details?.banner.id,
             fields: { ...updatedBannerFields },
             errorCB: (m: string) => (errorMessage = m),
           }),
@@ -213,6 +202,7 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
     setIsLoading(false)
 
     if (errorMessage) return errorAlert(errorMessage)
+
     successAlert("User has been updated successfully.")
   }
 
@@ -257,9 +247,7 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
             <div className="banner-options absolute top-[50%] right-0 mr-5 flex transform-[translateY(-50%)] gap-1">
               <ButtonDemo
                 onClick={() => {
-                  const input = document.querySelector(
-                    "#upload-banner"
-                  ) as HTMLInputElement | null
+                  const input = document.querySelector("#upload-banner") as HTMLInputElement | null
                   input?.click()
                 }}
                 startIcon={<Camera />}
@@ -272,20 +260,19 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
                 onChange={onSelectFileBanner}
                 className="hidden"
               />
-              {state.newBanner !== bannerPlaceholderImage &&
-                !state.isBannerRemoved && (
-                  <ButtonDemo
-                    startIcon={<X />}
-                    className="h-[30px] w-[30px] rounded-full bg-[rgba(0,0,0,0.7)] !shadow-none hover:bg-[rgba(0,0,0,0.8)] sm:h-[35px] sm:w-[35px]"
-                    onClick={() => {
-                      setState((prev) => ({
-                        ...prev,
-                        isBannerRemoved: true,
-                        newBanner: bannerPlaceholderImage,
-                      }))
-                    }}
-                  />
-                )}
+              {state.newBanner !== bannerPlaceholderImage && !state.isBannerRemoved && (
+                <ButtonDemo
+                  startIcon={<X />}
+                  className="h-[30px] w-[30px] rounded-full bg-[rgba(0,0,0,0.7)] !shadow-none hover:bg-[rgba(0,0,0,0.8)] sm:h-[35px] sm:w-[35px]"
+                  onClick={() => {
+                    setState((prev) => ({
+                      ...prev,
+                      isBannerRemoved: true,
+                      newBanner: bannerPlaceholderImage,
+                    }))
+                  }}
+                />
+              )}
             </div>
           </div>
 
@@ -316,20 +303,19 @@ const EditProfileContent = ({ closeDialog = () => {} }) => {
                   onChange={onSelectFile}
                   className="hidden"
                 />
-                {state.newAvatar !== avatarPlaceholderImage &&
-                  !state.isAvatarRemoved && (
-                    <ButtonDemo
-                      startIcon={<X />}
-                      className="h-[30px] w-[30px] rounded-full bg-[rgba(0,0,0,0.7)] !shadow-none hover:bg-[rgba(0,0,0,0.8)] sm:h-[35px] sm:w-[35px]"
-                      onClick={() => {
-                        setState((prev) => ({
-                          ...prev,
-                          isAvatarRemoved: true,
-                          newAvatar: avatarPlaceholderImage,
-                        }))
-                      }}
-                    />
-                  )}
+                {state.newAvatar !== avatarPlaceholderImage && !state.isAvatarRemoved && (
+                  <ButtonDemo
+                    startIcon={<X />}
+                    className="h-[30px] w-[30px] rounded-full bg-[rgba(0,0,0,0.7)] !shadow-none hover:bg-[rgba(0,0,0,0.8)] sm:h-[35px] sm:w-[35px]"
+                    onClick={() => {
+                      setState((prev) => ({
+                        ...prev,
+                        isAvatarRemoved: true,
+                        newAvatar: avatarPlaceholderImage,
+                      }))
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -414,14 +400,9 @@ const CropAvatarDialogContent = ({
   setCroppedImageSrc = (_: any) => {},
   setState = (_: any) => {},
 }) => {
-  const { resizeBase64Image } = useUtil()
 
   function getBase64ImageSize(base64String: any) {
-    const padding = base64String.endsWith("==")
-      ? 2
-      : base64String.endsWith("=")
-        ? 1
-        : 0
+    const padding = base64String.endsWith("==") ? 2 : base64String.endsWith("=") ? 1 : 0
     const base64Length = base64String.length
     const sizeInBytes = (base64Length * 3) / 4 - padding
     const sizeInKB = sizeInBytes / 1024
@@ -431,11 +412,7 @@ const CropAvatarDialogContent = ({
   return (
     <div className="crop-avatar-dialog">
       <div className="mx-auto mb-10 flex max-w-[500px]">
-        <CropDemo
-          src={src}
-          aspect={1}
-          setCroppedImageSrc={setCroppedImageSrc}
-        />
+        <CropDemo src={src} aspect={1} setCroppedImageSrc={setCroppedImageSrc} />
       </div>
       <div className="button-group flex justify-end gap-2">
         <ButtonDemo
@@ -455,8 +432,7 @@ const CropAvatarDialogContent = ({
             const size = getBase64ImageSize(croppedImageSrc).kilobytes
             let filteredImage = croppedImageSrc
 
-            if (size > 350)
-              filteredImage = await resizeBase64Image(croppedImageSrc, 350)
+            if (size > 350) filteredImage = await resizeBase64Image(croppedImageSrc, 350)
 
             setState((prev: any) => ({
               ...prev,
@@ -513,14 +489,9 @@ const CropBannerDialogContent = ({
   setCroppedImageSrc = (_: any) => {},
   setState = (_: any) => {},
 }) => {
-  const { resizeBase64Image } = useUtil()
 
   function getBase64ImageSize(base64String: any) {
-    const padding = base64String.endsWith("==")
-      ? 2
-      : base64String.endsWith("=")
-        ? 1
-        : 0
+    const padding = base64String.endsWith("==") ? 2 : base64String.endsWith("=") ? 1 : 0
     const base64Length = base64String.length
     const sizeInBytes = (base64Length * 3) / 4 - padding
     const sizeInKB = sizeInBytes / 1024
@@ -530,12 +501,7 @@ const CropBannerDialogContent = ({
   return (
     <div className="crop-banner-dialog">
       <div className="mx-auto mb-10 flex max-w-[100%]">
-        <CropDemo
-          src={src}
-          aspect={20 / 7}
-          scale={2}
-          setCroppedImageSrc={setCroppedImageSrc}
-        />
+        <CropDemo src={src} aspect={20 / 7} scale={2} setCroppedImageSrc={setCroppedImageSrc} />
       </div>
       <div className="button-group flex justify-end gap-2">
         <ButtonDemo
@@ -555,8 +521,7 @@ const CropBannerDialogContent = ({
             const size = getBase64ImageSize(croppedImageSrc).kilobytes
             let filteredImage = croppedImageSrc
 
-            if (size > 650)
-              filteredImage = await resizeBase64Image(croppedImageSrc, 650)
+            if (size > 650) filteredImage = await resizeBase64Image(croppedImageSrc, 650)
 
             setState((prev: any) => ({
               ...prev,

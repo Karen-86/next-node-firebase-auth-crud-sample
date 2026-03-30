@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { ButtonDemo, DialogDemo, CropAvatarDialog } from "@/components/index";
-import useUtil from "@/hooks/useUtil";
 import {LOCAL_DATA} from "@/constants/index";
 import { useAuthActions } from "@/modules/auth/hooks/useAuthActions";
 import { useAuthStore } from "@/modules/auth/store";
 import { useUserStore } from "@/modules/users/store";
+import  { convertToBase64} from '@/lib/utils/imageUtils'
 
 const { avatarPlaceholderImage } = LOCAL_DATA.images;
 
@@ -19,7 +19,7 @@ type StateProps = {
 const UpdateProfileDialog = () => {
   return (
     <DialogDemo
-      contentClassName="gap-0 py-4"
+      contentClassName="gap-0 py-4 "
       trigger={<ButtonDemo text={`${"Update Profile"}`} className={``} size="xs" variant="ghost" />}
     >
       {(closeDialog) => <UpdateProfileContent closeDialog={closeDialog} />}
@@ -28,7 +28,6 @@ const UpdateProfileDialog = () => {
 };
 
 const UpdateProfileContent = ({ closeDialog = () => {} }) => {
-  const { convertToBase64 } = useUtil();
 
   const getProfileAsync = useAuthStore(s => s.getProfileAsync)
   const updateTargetUserAsync =  useUserStore(s=>s.updateTargetUserAsync)

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { ButtonDemo, DialogDemo, InputDemo } from "@/components/index"
 import { useUserStore } from "@/modules/users/store"
-import useAlert from "@/hooks/useAlert"
+import { successAlert, errorAlert, warningAlert } from "@/lib/utils/alert"
 import { useAuthActions } from "@/modules/auth/hooks/useAuthActions"
 
 export const DeleteUserDialog = ({ userId = "" }) => {
@@ -24,7 +24,6 @@ const DeleteUserDialogContent = ({ userId = "", closeDialog = () => {} }) => {
   const isTargetUserDeleting = useUserStore((s) => s.isTargetUserDeleting)
   const { handleSignOut } = useAuthActions()
 
-  const { successAlert, errorAlert } = useAlert()
 
   return (
     <div className="delete-user-dialog">
