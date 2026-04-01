@@ -5,12 +5,12 @@ export const auth = {
   currentUser: null,
 }
 
-const urls = {
+export const urls = {
   // apiApp: "https://html-node-express-mongodb-auth-crud-xqo4.onrender.com/api/v1", // production
   apiApp: "http://localhost:8000/api/v1", // development
 }
 
-export function createHeaders({ isFormData = false } = {}) {
+export const createHeaders = ({ isFormData = false } = {}) => {
   const headers = {}
   if (!isFormData) {
     headers["Content-Type"] = "application/json"
@@ -19,12 +19,7 @@ export function createHeaders({ isFormData = false } = {}) {
   return headers
 }
 
-const api = axios.create({
-  baseURL: urls.apiApp,
-  withCredentials: true,
-})
-
-api.interceptors.request.use(async (config) => {
+export const requestMiddleware = async (config) => {
   const auth = getAuth()
   const user = auth.currentUser
 
@@ -34,33 +29,32 @@ api.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
+}
+
+const api = axios.create({
+  baseURL: urls.apiApp,
+  withCredentials: true,
 })
 
+api.interceptors.request.use(requestMiddleware)
+
 export default async function request(options) {
-  const {
-    url,
-    method = "GET",
-    headers = {},
-    body = null,
-    cb = () => {},
-  } = options
+  const { customApi = null, url, method = "GET", headers = {}, body = null } = options
 
   try {
-    const response = await api({
+    const response = await (customApi || api)({
       url,
       method,
       headers,
       ...(body && { data: body }),
     })
 
-    cb(response.data)
     return response.data
   } catch (err) {
     // Server responded (4xx / 5xx)
     if (err.response) {
       console.log("server response: ", err.response.data)
 
-      cb(err.response.data)
       return err.response.data
     }
 
@@ -69,7 +63,6 @@ export default async function request(options) {
       console.log("no response: ", err)
       alert(err.message || "Network Error")
       const res = { success: false, message: err.message || "Network Error" }
-      cb(res)
       return res
     }
 
@@ -77,7 +70,6 @@ export default async function request(options) {
     console.log("request setup error: ", err)
     alert(err.message || "Network Error")
     const res = { success: false, message: err.message || "Network Error" }
-    cb(res)
     return res
   }
 }
